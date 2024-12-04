@@ -108,7 +108,16 @@ func TestAccPostgresqlDefaultPrivileges_GrantOwner(t *testing.T) {
 	var stateConfig = fmt.Sprintf(`
 
 resource postgresql_role "test_owner" {
-       name = "test_owner"
+    name = "test_owner"
+}
+
+// From PostgreSQL 15, schema public is not wild open anymore
+resource "postgresql_grant" "public_usage" {
+	database          = "%s"
+	schema            = "public"
+	role              = postgresql_role.test_owner.name
+	object_type       = "schema"
+	privileges        = ["CREATE", "USAGE"]
 }
 
 resource "postgresql_default_privileges" "test_ro" {
@@ -117,9 +126,9 @@ resource "postgresql_default_privileges" "test_ro" {
 	role        = "%s"
 	schema      = "public"
 	object_type = "table"
-	privileges   = ["SELECT"]
+	privileges  = ["SELECT"]
 }
-	`, dbName, roleName)
+	`, dbName, dbName, roleName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -142,7 +151,7 @@ resource "postgresql_default_privileges" "test_ro" {
 					},
 					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "object_type", "table"),
 					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.#", "1"),
-					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.3138006342", "SELECT"),
+					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.0", "SELECT"),
 
 					// check if connected user does not have test_owner granted anymore.
 					checkUserMembership(t, dsn, config.Username, "test_owner", false),
