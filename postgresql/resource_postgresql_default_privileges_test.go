@@ -151,7 +151,7 @@ resource "postgresql_default_privileges" "test_ro" {
 					},
 					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "object_type", "table"),
 					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.#", "1"),
-					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.0", "SELECT"),
+					resource.TestCheckResourceAttr("postgresql_default_privileges.test_ro", "privileges.3138006342", "SELECT"),
 
 					// check if connected user does not have test_owner granted anymore.
 					checkUserMembership(t, dsn, config.Username, "test_owner", false),
