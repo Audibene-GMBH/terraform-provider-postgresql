@@ -320,6 +320,11 @@ func (c *Client) connect() (*DBConnection, error) {
 		for i := 0; i < 10; i++ {
 			db, err = sql.Open("postgres", dsn)
 			if err == nil {
+				err = db.Ping()
+				if err != nil {
+					err = fmt.Errorf("failed to ping db %w", err)
+					continue
+				}
 				break
 			}
 			time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
